@@ -2,7 +2,7 @@
 
 ## Scrum
 
-![hgh](https://www.pm-partners.com.au/wp-content/uploads/2021/06/blog-scrum-process-opt.jpg)
+![Scrum process](images/scrum-process.jpg "Scrum process")
 
 ### Definition
 
@@ -190,8 +190,106 @@
 
 ### Useful resources
 
-[The Official Scrum Guide](images/scrum-process.jpg "Scrum process")
+[The Official Scrum Guide](https://scrumguides.org/scrum-guide.html)
 
 ### Certification
 
 [Scrum Foundation Professional Certification - SFPC™](https://www.credly.com/badges/2be806e6-da64-46fb-9cf5-39f6cdefe6c2/linked_in_profile)
+
+## Microservices
+- Microservices are small, autonomous services that work together
+- One should use microservices as a means to obtain a desired outcome rather than for the sake of using a new technology
+- Microservices shouldn't be the default option. If you think a service architecture could help, try it with one of the modules from a very simple monolith typology and let it evolve from there
+
+### Kubernetes
+
+#### What is Kubernetes?
+
+- What if you could just define "This process should have 6 copies using X amount of resources." and have the *2..N* computers working as a single entity to fulfill your request? That's just one thing Kubernetes makes possible
+- In essence, Kubernetes is the sum of all the bash scripts and best practices that most system administrators would cobble together over time, presented as a single system behind a declarative set of APIs
+- Kubernetes (K8s) is an open-source system for automating deployment, scaling, and management of containerized applications. It groups containers that make up an application into logical units for easy management and discovery
+- The main responsibility of an orchestration system:
+	+ Starting and stopping of containers
+ 	+ Networking between containers
+ 	+ Health monitoring
+ 	+ We want the system to keep the application automatically healthy
+- [Kubernetes comic](https://cloud.google.com/kubernetes-engine/kubernetes-comic/)
+
+#### Kubernetes cluster with k3d
+
+- A cluster is a group of machines, nodes, that work together
+- "Server nodes" are nodes with control-plane
+- "Agent nodes" are nodes without that role
+
+![image](https://github.com/FAJOUIAnas/Moriono/assets/93566369/68953fac-78b5-4843-b4b6-50d7f3734dce "without k3d")
+- A cluster with k3d:
+
+![image](https://github.com/FAJOUIAnas/Moriono/assets/93566369/8d4592a5-4d6d-4123-a2af-7daa4aebac5b "with k3d")
+
+#### kubectl
+
+- The Kubernetes command-line tool
+- Allows to interact with the cluster
+- Read kubeconfig and use the information to connect to the cluster
+- The contents include certificates, passwords and the address in which the cluster API
+
+#### Terminology
+
+- Pod
+	+ An abstraction around one or more containers
+	+ Container of containers
+- ReplicaSets
+  	+ Used to tell how many replicas of a Pod you want
+	+ It will delete or create Pods until the number of Pods you wanted are running
+	+ ReplicaSets are managed by Deployments
+- Deployment
+  	+ Provides declarative updates for Pods and ReplicaSets
+  	+ You describe a desired state in a Deployment, and the Deployment Controller changes the actual state to the desired state at a controlled rate
+  	+ A Deployment resource takes care of deployment. It's a way to tell Kubernetes what container you want, how they should be running and how many of them should be running
+  	+ Kubernetes take care of rolling out a new version of a deployment by using tags (e.g. hehe/image:tag), with the deployments each time we update the image we can modify and apply the new deployment yaml
+- Service
+  	+ Service resource will take care of serving the application to connections from outside of the cluster
+  	+ Used to expose and access applications running within a Kubernetes cluster
+  	+ Enable network communication between different parts of your application or between different applications
+  	+ They provide a consistent and stable endpoint to interact with your application, regardless of how many pods or replicas are running, their IP addresses, or their current state
+  	+ Types:
+  		* ClusterIP
+  	 		- Internal service (only accessible within the cluster)
+  	   		- Useful for inter-pod communication
+		* NodePort
+			- Exposes the service on a static port on each node
+  			- Used for external access to a service
+  	  		- Not flexible and require you to assign a different port for every application
+  	    	- Are not used in production but are helpful to know about
+  	     	- Service.yaml :
+
+					apiVersion: v1
+					kind: Service
+					metadata:
+					  name: my-nodeport-service
+					spec:
+					  type: NodePort
+					  selector:
+						app: my-app # This is the app as declared in the deployment.
+					  ports:
+						- name: http
+						  nodePort: 30080 # This is the port that is available outside. Value for nodePort can be between 30000-32767
+						  protocol: TCP
+						  port: 1234 # This is a port that is available to the cluster, in this case it can be ~ anything
+						  targetPort: 3000 # This is the target port
+
+		* LoadBalancer:
+			- Creates an external load balancer
+			- Useful in cloud environments where load balancers can be provisioned automatically
+		* ExternalName:
+			- Maps a service to a DNS name
+			- Acts as CNAME record
+
+  #### Best practices
+  
+- When updating anything in Kubernetes the usage of delete is actually an anti-pattern and you should use it only as the last option. As long as you don't delete the resource Kubernetes will do a rolling update, ensuring minimum (or none) downtime for the application. On the topic of anti-patterns: you should also always avoid doing anything imperatively! If your files don't tell Kubernetes and your team what the state should be and instead you run commands that edit the state you are just lowering the bus factor for your cluster and application.
+- Often you (the maintainer or developer) don't have to do anything in case something goes wrong with a pod or a container. Sometimes you need to interfere, or you might have problems with your own configuration.
+- Debugging tools:
+  + kubectl describe
+  + kubectl logs
+  + kubectl delete
