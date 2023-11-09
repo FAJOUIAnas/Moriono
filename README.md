@@ -221,10 +221,10 @@
 - "Server nodes" are nodes with control-plane
 - "Agent nodes" are nodes without that role
 
-![image](https://github.com/FAJOUIAnas/Moriono/assets/93566369/68953fac-78b5-4843-b4b6-50d7f3734dce "without k3d")
+![With k3d](https://github.com/FAJOUIAnas/Moriono/assets/93566369/68953fac-78b5-4843-b4b6-50d7f3734dce "without k3d")
 - A cluster with k3d:
 
-![image](https://github.com/FAJOUIAnas/Moriono/assets/93566369/8d4592a5-4d6d-4123-a2af-7daa4aebac5b "with k3d")
+![Without k3d](https://github.com/FAJOUIAnas/Moriono/assets/93566369/8d4592a5-4d6d-4123-a2af-7daa4aebac5b "with k3d")
 
 #### kubectl
 
@@ -247,6 +247,9 @@
   	+ You describe a desired state in a Deployment, and the Deployment Controller changes the actual state to the desired state at a controlled rate
   	+ A Deployment resource takes care of deployment. It's a way to tell Kubernetes what container you want, how they should be running and how many of them should be running
   	+ Kubernetes take care of rolling out a new version of a deployment by using tags (e.g. hehe/image:tag), with the deployments each time we update the image we can modify and apply the new deployment yaml
+ 
+#### Networking
+
 - Service
   	+ Service resource will take care of serving the application to connections from outside of the cluster
   	+ Used to expose and access applications running within a Kubernetes cluster
@@ -260,23 +263,23 @@
 			- Exposes the service on a static port on each node
   			- Used for external access to a service
   	  		- Not flexible and require you to assign a different port for every application
-  	    	- Are not used in production but are helpful to know about
-  	     	- Service.yaml :
+  	    		- Are not used in production but are helpful to know about
+  	     		- Service.yaml :
 
-					apiVersion: v1
-					kind: Service
-					metadata:
-					  name: my-nodeport-service
-					spec:
-					  type: NodePort
-					  selector:
-						app: my-app # This is the app as declared in the deployment.
-					  ports:
-						- name: http
-						  nodePort: 30080 # This is the port that is available outside. Value for nodePort can be between 30000-32767
-						  protocol: TCP
-						  port: 1234 # This is a port that is available to the cluster, in this case it can be ~ anything
-						  targetPort: 3000 # This is the target port
+						apiVersion: v1
+						kind: Service
+						metadata:
+						  name: my-nodeport-service
+						spec:
+						  type: NodePort
+						  selector:
+							app: my-app # This is the app as declared in the deployment.
+						  ports:
+							- name: http
+							  nodePort: 30080 # This is the port that is available outside. Value for nodePort can be between 30000-32767
+							  protocol: TCP
+							  port: 1234 # This is a port that is available to the cluster, in this case it can be ~ anything
+							  targetPort: 3000 # This is the target port
 
 		* LoadBalancer:
 			- Creates an external load balancer
@@ -284,6 +287,12 @@
 		* ExternalName:
 			- Maps a service to a DNS name
 			- Acts as CNAME record
+- Ingress
+	+ Incoming Network Access resource
+  	+ Different type of resource from *Services*
+  		* In OSI model, it works in layer 7 while services work on layer 4
+  	 	* Can be used together: first a *LoadBalancer* and then Ingress to handle routing
+	+ Similar to Nginx
 
   #### Best practices
   
@@ -293,3 +302,28 @@
   + kubectl describe
   + kubectl logs
   + kubectl delete
+
+## Networking
+
+### Reverse proxy
+![Reverse proxy](https://github.com/FAJOUIAnas/Moriono/assets/93566369/f26f0cd1-3260-4692-b398-4daee2571abd "Diagram of a reverse proxy")
+- Is an application that sits in front of back-end applications and forwards client (e.g. browser) requests to those applications
+- The resources returned to the client appear as if they originated from the web server itself
+- Can help increase:
+	+ Scalability
+ 	+ Performance
+  	+ Resilience
+  	+ Security
+- Can keep a cache of static content
+- Can be used to add features such as compression or TLS encryption to the communication channel between the client and the reverse proxy
+
+### Web services
+
+#### Nginx
+- Is a web server that can also be used as a:
+	+ Reverse proxy
+ 	+ Load balancer
+  	+ Mail proxy
+  	+ HTTP cache
+- Easy to configure in order to serve static web content or to act as a proxy server
+- Can be deployed to also serve dynamic content on the network
