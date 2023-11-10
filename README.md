@@ -327,3 +327,21 @@
   	+ HTTP cache
 - Easy to configure in order to serve static web content or to act as a proxy server
 - Can be deployed to also serve dynamic content on the network
+
+## OS
+
+### Linux
+
+#### Pass
+
+- The standard unix password manager
+- Follows Unix philosophu
+- Each password lives inside of a gpg encrypted file whose filename is the title of the website or resource that requires the password
+- These encrypted files may be:
+	+ Organized into meaningful folder hierarchies
+ 	+ Copied from computer to computer
+  	+ Manipulated using standard command line file management utilities
+- Makes managing these individual password files extremely easy
+- All passwords live in ~/.password-store
+- Provides commands for adding, editing, generating, and retrieving passwords
+- Capable of temporarily putting passwords on your clipboard and tracking password changes using git
