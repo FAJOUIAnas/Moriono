@@ -214,6 +214,7 @@
  	+ Health monitoring
  	+ We want the system to keep the application automatically healthy
 - [Kubernetes comic](https://cloud.google.com/kubernetes-engine/kubernetes-comic/)
+- When managing Docker images, Kubernetes also makes applications portable. Once they are developed with a containerized architecture using Kubernetes, they can be deployed anywhere – public cloud, hybrid, on-prem – without any change to the underlying code.
 
 #### Kubernetes cluster with k3d
 
@@ -233,13 +234,13 @@
 - Read kubeconfig and use the information to connect to the cluster
 - The contents include certificates, passwords and the address in which the cluster API
 
-#### Terminology
+#### Concepts
 
 - Pod
 	+ An abstraction around one or more containers
 	+ Container of containers
 - ReplicaSets
-  	+ Used to tell how many replicas of a Pod you want
+	+ Used to tell how many replicas of a Pod you want
 	+ It will delete or create Pods until the number of Pods you wanted are running
 	+ ReplicaSets are managed by Deployments
 - Deployment
@@ -247,9 +248,23 @@
   	+ You describe a desired state in a Deployment, and the Deployment Controller changes the actual state to the desired state at a controlled rate
   	+ A Deployment resource takes care of deployment. It's a way to tell Kubernetes what container you want, how they should be running and how many of them should be running
   	+ Kubernetes take care of rolling out a new version of a deployment by using tags (e.g. hehe/image:tag), with the deployments each time we update the image we can modify and apply the new deployment yaml
+
+- Updating images
+	+ Kubernetes doesn't know if a Docker image is modified or wether a newer version is uploaded to the repository
+	+ By default, Kubernetes won't pull the image if it already exists
+	+ By using tags (e.g. fjwix/image:tag) with the deployments each time you update the image you can modify and apply the new deployment yaml. From the tag Kubernetes will know that the image is a new one and pulls it.
+	+ When you first create a Deployment, StatefulSet, Pod, or other object that includes a Pod template, then by default the pull policy of all containers in that pod will be set to `IfNotPresent` if it is not explicitly specified. This policy causes the kubelet to skip pulling an image if it already exists.
+	+ The `imagePullPolicy` for a container and the tag of the image affect when the kubelet attempts to pull (download) the specified image. Here's a list of the values you can set for imagePullPolicy and the effects these values have:
+		* **`IfNotPresent`:** the image is pulled only if it is not already present locally
+		* **`Always`:** every time the kubelet launches a container, the kubelet queries the container image registry to resolve the name to an image digest. If the kubelet has a container image with that exact digest cached locally, the kubelet uses its cached image; otherwise, the kubelet pulls the image with the resolved digest, and uses that image to launch the container.
+		* **`Never`:** the kubelet does not try fetching the image. If the image is somehow already present locally, the kubelet attempts to start the container; otherwise, startup fails. See pre-pulled images for more details.
+	+ The caching semantics of the underlying image provider make even imagePullPolicy: Always efficient, as long as the registry is reliably accessible. Your container runtime can notice that the image layers already exist on the node so that they don't need to be downloaded again.
+
+
  
 #### Networking
 
+- [Webinar: Kubernetes and Networks: Why is This So Dang Hard?](https://youtu.be/GgCA2USI5iQ?si=Pc7d4OfzgOQoFLRp)
 - Service
   	+ Service resource will take care of serving the application to connections from outside of the cluster
   	+ Used to expose and access applications running within a Kubernetes cluster
@@ -294,7 +309,35 @@
   	 	* Can be used together: first a *LoadBalancer* and then Ingress to handle routing
 	+ Similar to Nginx
 
-  #### Best practices
+#### Storage
+
+##### Storage on Kubernetes is hard
+
+- [Why Is Storage On Kubernetes So Hard?](https://softwareengineeringdaily.com/2019/01/11/why-is-storage-on-kubernetes-is-so-hard/)
+- Kubernetes does not support storing state. Almost all production applications are stateful, i.e. require some sort of external storage.
+- A Kubernetes architecture is very dynamic. Containers are being created and destroyed, depending on the load and on the specifications of the developers. Pods and containers can self-heal and replicate. They are, in essence, ephemeral.
+- A persistent storage solution cannot afford this dynamic behavior. **Persistent storage cannot be bound to the rules of being dynamically created and destroyed.**
+- The storage landscape for cloud native applications is not easy to understand. The [Kubernetes storage lingo](https://www.youtube.com/watch?v=uSxlgK1bCuA) can be confusing, with many terms that have intricate meanings and subtle changes.
+
+##### Volume plugins
+
+- Kubernetes communicate with storage using control plane interfaces
+- The interfaces link Kubernetes with external storage
+- The external storage solutions linked to Kubernetes are called Volume plugins
+- Volume Plugins enable abstracting storage and grant storage portability
+
+##### Storage in Native Kubernetes
+
+- Kubernetes natively offers some solutions to manage storage:
+	+ Ephemeral options
+	+ Persistent storage:
+		* Piersistent Volumes
+		* Persistent Volume Claims
+		* Storage Classes
+		* StatefulSets
+
+
+#### Best practices
   
 - When updating anything in Kubernetes the usage of delete is actually an anti-pattern and you should use it only as the last option. As long as you don't delete the resource Kubernetes will do a rolling update, ensuring minimum (or none) downtime for the application. On the topic of anti-patterns: you should also always avoid doing anything imperatively! If your files don't tell Kubernetes and your team what the state should be and instead you run commands that edit the state you are just lowering the bus factor for your cluster and application.
 - Often you (the maintainer or developer) don't have to do anything in case something goes wrong with a pod or a container. Sometimes you need to interfere, or you might have problems with your own configuration.
@@ -345,3 +388,71 @@
 - All passwords live in ~/.password-store
 - Provides commands for adding, editing, generating, and retrieving passwords
 - Capable of temporarily putting passwords on your clipboard and tracking password changes using git
+
+## Cloud Computing
+
+### Definition
+
+- Is the on-demand availability of computer system resources, especially data storage (cloud storage) and computing power, without direct active management by the user
+- Large clouds often have functions distributed over multiple locations, each of which is a data center
+- Relies on sharing of resources (virtualization) to achieve coherence and typically uses a pay-as-you-go model, which can help in reducing capital expenses but may also lead to unexpected operating expenses for users.
+
+#### Five essential characteristics
+
+- **On-demand self-service:** a consumer can unilaterally provision computing capabilities, such as server time and network storage, as needed automatically without requiring human interaction with each service provider.
+- **Broad network access:** capabilities are available over the network and accessed through standard mechanisms that promote use by heterogeneous thin or thick client platforms (e.g., mobile phones, tablets, laptops, and workstations).
+- **Resource pooling:** the provider's computing resources are pooled to serve multiple consumers using a multi-tenant model, with different physical and virtual resources dynamically assigned and reassigned according to consumer demand.
+- **Rapid elasticity:** capabilities can be elastically provisioned and released, in some cases automatically, to scale rapidly outward and inward commensurate with demand. To the consumer, the capabilities available for provisioning often appear unlimited and can be appropriated in any quantity at any time.
+- **Measured service:** cloud systems automatically control and optimize resource use by leveraging a metering capability at some level of abstraction appropriate to the type of service (e.g., storage, processing, bandwidth, and active user accounts). Resource usage can be monitored, controlled, and reported, providing transparency for both the provider and consumer of the utilized service.
+
+### Types
+
+- **Public cloud:**
+	+ Most common type of cloud computing deployment
+	+ The cloud resources (like servers and storage) are owned and operated by a third-party cloud service provider and delivered over the internet
+	+ All hardware, software, and other supporting infrastructure are owned and managed by the cloud provider
+	+ e.g., Microsoft Azure, AWS, GCP, etc.
+	+ You share the same hardware, storage, and network devices with other organizations or cloud “tenants”
+	+ You access services and manage your account using a web browser
+	+ Public cloud deployments are frequently used:
+		* To provide web-based email, online office applications, storage
+		* In testing and development environments
+	+ Advantages:
+		* Lower costs—no need to purchase hardware or software
+		* Pay-per-use
+		* No maintenance—your service provider provides the maintenance
+		* Near-unlimited scalability—on-demand resources are available to meet business needs
+		* High reliability—a vast network of servers ensures against failure
+- **Private cloud:**
+	+ Consists of cloud computing resources used exclusively by one business or organization
+	+ Can be:
+		* Physically located at your organization’s on-site datacenter (on-premises)
+		* Hosted by a third-party service provider
+	+ The services and infrastructure are always maintained on a private network and the hardware and software are dedicated solely to your organization
+	+ Can make it easier for an organization to customize its resources to meet specific IT requirements
+	+ Often used by:
+		* Government agencies
+		* Financial institutions
+		* Any mid- to large-size organizations with business-critical operations seeking enhanced control over their environment
+	+ Advantages:
+		* More flexibility—your organization can customize its cloud environment to meet specific business needs
+		* More control—resources are not shared with others, so higher levels of control and privacy are possible
+		* More scalability—private clouds often offer more scalability compared to on-premises infrastructure
+- **Hybrid cloud:**
+	+ combines on-premises infrastructure—or a private cloud—with a public cloud
+	+ Allow data and apps to move between the two environments
+	+ Many organizations choose a hybrid cloud approach due to:
+		* Business imperatives such as meeting regulatory and data sovereignty requirements
+		* Taking full advantage of on-premises technology investment
+		* Addressing low latency issues
+	+ Advantages:
+		* Greater flexibility
+		* More deployment options
+		* Security
+		* Compliance
+		* Getting more value from their existing infrastructure
+		* When computing and processing demand fluctuates, hybrid cloud computing gives businesses the ability to seamlessly scale up their on-premises infrastructure to the public cloud to handle any overflow—without giving third-party datacenters access to the entirety of their data.
+		* Organizations gain the flexibility and innovation the public cloud provides by running certain workloads in the cloud while keeping highly sensitive data in their own datacenter to meet client needs or regulatory requirements.
+		* Eliminates the need to make massive capital expenditures to handle short-term spikes in demand
+
+### [CNCF Cloud Native Interactive Landscape](https://landscape.cncf.io/)
