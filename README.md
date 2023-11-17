@@ -210,9 +210,9 @@
 - Kubernetes (K8s) is an open-source system for automating deployment, scaling, and management of containerized applications. It groups containers that make up an application into logical units for easy management and discovery
 - The main responsibility of an orchestration system:
 	+ Starting and stopping of containers
- 	+ Networking between containers
- 	+ Health monitoring
- 	+ We want the system to keep the application automatically healthy
+	+ Networking between containers
+	+ Health monitoring
+	+ We want the system to keep the application automatically healthy
 - [Kubernetes comic](https://cloud.google.com/kubernetes-engine/kubernetes-comic/)
 - When managing Docker images, Kubernetes also makes applications portable. Once they are developed with a containerized architecture using Kubernetes, they can be deployed anywhere – public cloud, hybrid, on-prem – without any change to the underlying code.
 
@@ -311,7 +311,9 @@
 
 #### Storage
 
-##### Storage on Kubernetes is hard
+##### Challenges
+
+###### Storage on Kubernetes is hard
 
 - [Why Is Storage On Kubernetes So Hard?](https://softwareengineeringdaily.com/2019/01/11/why-is-storage-on-kubernetes-is-so-hard/)
 - Kubernetes does not support storing state. Almost all production applications are stateful, i.e. require some sort of external storage.
@@ -319,26 +321,77 @@
 - A persistent storage solution cannot afford this dynamic behavior. **Persistent storage cannot be bound to the rules of being dynamically created and destroyed.**
 - The storage landscape for cloud native applications is not easy to understand. The [Kubernetes storage lingo](https://www.youtube.com/watch?v=uSxlgK1bCuA) can be confusing, with many terms that have intricate meanings and subtle changes.
 
-##### Volume plugins
+###### Volume plugins
 
 - Kubernetes communicate with storage using control plane interfaces
 - The interfaces link Kubernetes with external storage
 - The external storage solutions linked to Kubernetes are called Volume plugins
 - Volume Plugins enable abstracting storage and grant storage portability
 
-##### Storage in Native Kubernetes
+###### Storage in Native Kubernetes
 
 - Kubernetes natively offers some solutions to manage storage:
 	+ Ephemeral options
 	+ Persistent storage:
-		* Piersistent Volumes
-		* Persistent Volume Claims
+		* Piersistent Volumes (PV):
+			- Are storage units that have been provisioned by an administrator
+			- Are independent of any single pod
+		* Persistent Volume Claims (PVC):
+			- Are requests for the storage, i.e. PVs. With PVC
+			- It’s possible to bind storage to a particular node, making it available to that node for usage
 		* Storage Classes
 		* StatefulSets
+- There are two ways of dealing with storage:
+	+ Static provisioning:
+		* Administrator provisions PVs that they think pods might require before the actual requests are made
+		* These PVs are manually bound to specific pods with explicit PVCs
+		* In practice, statically defined PVs are not compatible with the portable structure of Kubernetes, the storage that is being used can be environment-dependent. Manual binding requires changes in the YAML file to point to the vendor-specific storage solutions.
+		* Goes against the mindset of Kubernetes in terms of how developers think about resources:
+			- CPU and memory are not allocated beforehand and bound to pods or containers. They are dynamically granted.
+	+ Dynamic provisioning:
+		* Done with Storage Classes
+		* Cluster administrator do not need to manually create the PVs beforehand:
+			- They instead create multiple profiles of storage, just like templates
+			- When a developer makes a PVC, depending on the requirements of the request, one of these templates is created at the time of the request, and attached to the pod.
 
+![Broad overview of how external storage is handled](images/Kubernetes_PVC.png "How external storage is handled with native Kubernetes")
+
+###### Open-Source Projects
+
+- Ceph:
+	+ Is a storage cluster
+	+ Aynamically managed
+	+ Horizontally scalable
+	+ Distributed
+	+ Provides a logical abstraction over the storage resources
+	+ Designed to:
+		* Have no single point of failure
+		* Be self-managing
+		* Be software-based
+- Rook:
+	+ A cloud-native storage orchestrator
+	+ It extends Kubernetes
+	+ Allows putting Ceph into containers
+	+ Provides cluster management logic for running Ceph reliably on Kubernetes
+	+ Automates:
+		* Deployment
+		* Bootstrapping
+		* Configuration
+		* Scaling
+		* Rebalancing
+
+##### Volumes
+
+###### emptyDir
+
+- Are shared filesystems inside a pod
+- Their lifecycle is tied to a pod
+- Is initially empty
+- Created when a Pod is assigned to a Node
+- Can be used to share data between containers within the same Pod
 
 #### Best practices
-  
+
 - When updating anything in Kubernetes the usage of delete is actually an anti-pattern and you should use it only as the last option. As long as you don't delete the resource Kubernetes will do a rolling update, ensuring minimum (or none) downtime for the application. On the topic of anti-patterns: you should also always avoid doing anything imperatively! If your files don't tell Kubernetes and your team what the state should be and instead you run commands that edit the state you are just lowering the bus factor for your cluster and application.
 - Often you (the maintainer or developer) don't have to do anything in case something goes wrong with a pod or a container. Sometimes you need to interfere, or you might have problems with your own configuration.
 - Debugging tools:
