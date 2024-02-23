@@ -424,6 +424,15 @@
 - Easy to configure in order to serve static web content or to act as a proxy server
 - Can be deployed to also serve dynamic content on the network
 
+### Internet protocol
+
+#### SMTP
+
+- Is a communication protocol for email transmission.
+- SMTP Server:
+	+ Responsible for sending, recieving, or relaying emails.
+	+ Runs on port 25 (port 587 for SSL/TLS communication).
+
 ## OS
 
 ### Linux
