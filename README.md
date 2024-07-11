@@ -253,7 +253,7 @@
 	+ Kubernetes doesn't know if a Docker image is modified or wether a newer version is uploaded to the repository
 	+ By default, Kubernetes won't pull the image if it already exists
 	+ By using tags (e.g. fjwix/image:tag) with the deployments each time you update the image you can modify and apply the new deployment yaml. From the tag Kubernetes will know that the image is a new one and pulls it.
-	+ When you first create a Deployment, StatefulSet, Pod, or other object that includes a Pod template, then by default the pull policy of all containers in that pod will be set to `IfNotPresent` if it is not explicitly specified. This policy causes the kubelet to skip pulling an image if it already exists.
+	+ When you first create a Deployment, StatefulSet, Pod, or other object that includes a Pod template, by default the pull policy of all containers in that pod will be set to `IfNotPresent` if it is not explicitly specified. This policy causes the kubelet to skip pulling an image if it already exists.
 	+ The `imagePullPolicy` for a container and the tag of the image affect when the kubelet attempts to pull (download) the specified image. Here's a list of the values you can set for imagePullPolicy and the effects these values have:
 		* **`IfNotPresent`:** the image is pulled only if it is not already present locally
 		* **`Always`:** every time the kubelet launches a container, the kubelet queries the container image registry to resolve the name to an image digest. If the kubelet has a container image with that exact digest cached locally, the kubelet uses its cached image; otherwise, the kubelet pulls the image with the resolved digest, and uses that image to launch the container.
@@ -389,6 +389,38 @@
 - Is initially empty
 - Created when a Pod is assigned to a Node
 - Can be used to share data between containers within the same Pod
+
+#### Architecture
+
+##### Worker Nodes
+
+- Contains running pods
+- Main processes:
+	+ Container runtime (Docker)
+	+ Kubelet:
+		* The interface between the container runtime and the node itself
+		* Runs pods and assigns resources to them
+	+ Kube proxy: Forwards requests from services to pods
+
+##### Master Nodes
+
+- Main processes:
+	+ API Server: takes queries and updates cluster respectively
+	+ Scheduler:
+		* Decides pods to be deployed on what worker node depending on CPU and memory available
+		* Uses the Kubelet to actually start the pod
+	+ Controller manager:
+		* Detects state changes of the cluster
+		* If it detects pod failure, it will send a request to the Scheduler to start a new pod
+	+ etcd:
+		* Key value store
+		* All changes are saved in it
+		* Contains all data and information of the state of the cluster
+		* Application data is NOT stored in etcd
+	
+- Master Nodes are also replicated:
+	+ API Servers are load balanced
+	+ etcd storage is distributed
 
 #### Best practices
 
