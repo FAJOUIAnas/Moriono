@@ -244,6 +244,7 @@
 	+ It will delete or create Pods until the number of Pods you wanted are running
 	+ ReplicaSets are managed by Deployments
 - Deployment
+	+ Abstraction over pods
   	+ Provides declarative updates for Pods and ReplicaSets
   	+ You describe a desired state in a Deployment, and the Deployment Controller changes the actual state to the desired state at a controlled rate
   	+ A Deployment resource takes care of deployment. It's a way to tell Kubernetes what container you want, how they should be running and how many of them should be running
@@ -405,7 +406,10 @@
 ##### Master Nodes
 
 - Main processes:
-	+ API Server: takes queries and updates cluster respectively
+	+ API Server:
+		* Takes queries and updates cluster respectively
+		* The entrypoint with which you talk to your k8s cluster
+		* You can communicate with it via UI, API, or CLI (kubectl)
 	+ Scheduler:
 		* Decides pods to be deployed on what worker node depending on CPU and memory available
 		* Uses the Kubelet to actually start the pod
@@ -433,13 +437,20 @@
 
 ## Networking
 
+### Proxy
+
+- Acts as an intermediary between a client and the internet
+- It forwards the request on behalf of the client and then sends the server's response back to the client
+- The client is often aware of its presence
+
 ### Reverse proxy
 ![Reverse proxy](https://github.com/FAJOUIAnas/Moriono/assets/93566369/f26f0cd1-3260-4692-b398-4daee2571abd "Diagram of a reverse proxy")
 - Is an application that sits in front of back-end applications and forwards client (e.g. browser) requests to those applications
 - The resources returned to the client appear as if they originated from the web server itself
+- The client is often not aware of its presence
 - Can help increase:
 	+ Scalability
- 	+ Performance
+	+ Performance
   	+ Resilience
   	+ Security
 - Can keep a cache of static content
@@ -450,7 +461,7 @@
 #### Nginx
 - Is a web server that can also be used as a:
 	+ Reverse proxy
- 	+ Load balancer
+	+ Load balancer
   	+ Mail proxy
   	+ HTTP cache
 - Easy to configure in order to serve static web content or to act as a proxy server
