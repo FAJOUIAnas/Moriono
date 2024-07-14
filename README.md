@@ -249,7 +249,6 @@
   	+ You describe a desired state in a Deployment, and the Deployment Controller changes the actual state to the desired state at a controlled rate
   	+ A Deployment resource takes care of deployment. It's a way to tell Kubernetes what container you want, how they should be running and how many of them should be running
   	+ Kubernetes take care of rolling out a new version of a deployment by using tags (e.g. hehe/image:tag), with the deployments each time we update the image we can modify and apply the new deployment yaml
-
 - Updating images
 	+ Kubernetes doesn't know if a Docker image is modified or wether a newer version is uploaded to the repository
 	+ By default, Kubernetes won't pull the image if it already exists
@@ -267,7 +266,7 @@
 
 - [Webinar: Kubernetes and Networks: Why is This So Dang Hard?](https://youtu.be/GgCA2USI5iQ?si=Pc7d4OfzgOQoFLRp)
 - Service
-  	+ Service resource will take care of serving the application to connections from outside of the cluster
+	+ Service resource will take care of serving the application to connections from outside of the cluster
   	+ Used to expose and access applications running within a Kubernetes cluster
   	+ Enable network communication between different parts of your application or between different applications
   	+ They provide a consistent and stable endpoint to interact with your application, regardless of how many pods or replicas are running, their IP addresses, or their current state
@@ -280,23 +279,23 @@
   			- Used for external access to a service
   	  		- Not flexible and require you to assign a different port for every application
   	    		- Are not used in production but are helpful to know about
-  	     		- Service.yaml :
-
-						apiVersion: v1
-						kind: Service
-						metadata:
-						  name: my-nodeport-service
-						spec:
-						  type: NodePort
-						  selector:
-							app: my-app # This is the app as declared in the deployment.
-						  ports:
-							- name: http
-							  nodePort: 30080 # This is the port that is available outside. Value for nodePort can be between 30000-32767
-							  protocol: TCP
-							  port: 1234 # This is a port that is available to the cluster, in this case it can be ~ anything
-							  targetPort: 3000 # This is the target port
-
+				- Service.yaml :
+					```yaml
+					apiVersion: v1
+					kind: Service
+					metadata:
+						name: my-nodeport-service
+					spec:
+						type: NodePort
+						selector:
+						app: my-app # This is the app as declared in the deployment.
+						ports:
+						- name: http
+							nodePort: 30080 # This is the port that is available outside. Value for nodePort can be between 30000-32767
+							protocol: TCP
+							port: 1234 # This is a port that is available to the cluster, in this case it can be ~ anything
+							targetPort: 3000 # This is the target port
+					```
 		* LoadBalancer:
 			- Creates an external load balancer
 			- Useful in cloud environments where load balancers can be provisioned automatically
@@ -307,7 +306,7 @@
 	+ Incoming Network Access resource
   	+ Different type of resource from *Services*
   		* In OSI model, it works in layer 7 while services work on layer 4
-  	 	* Can be used together: first a *LoadBalancer* and then Ingress to handle routing
+		* Can be used together: first a *LoadBalancer* and then Ingress to handle routing
 	+ Similar to Nginx
 
 #### Storage
@@ -408,7 +407,7 @@
 - Main processes:
 	+ API Server:
 		* Takes queries and updates cluster respectively
-		* The entrypoint with which you talk to your k8s cluster
+		* The entrypoint with which you talk to your K8s cluster
 		* You can communicate with it via UI, API, or CLI (kubectl)
 	+ Scheduler:
 		* Decides pods to be deployed on what worker node depending on CPU and memory available
@@ -426,6 +425,60 @@
 	+ API Servers are load balanced
 	+ etcd storage is distributed
 
+#### YAML Configuration file
+
+##### Overview
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.16
+        ports:
+        - containerPort: 8080
+```
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+spec:
+  selector:
+    app: nginx
+  ports:
+    - protocol: TCP
+      port: 80 # This is the port that will recieve requests
+      targetPort: 8080 # This is the container port
+```
+
+- 3 parts:
+	+ Metadata
+	+ Specification: the attributes are specific to the kind
+		* Template: is the blueprint of a pod, its where you specify:
+			- The name of the container
+			- What ports to open
+			- The image
+	+ Status: automatically generated and added by K8s
+- K8s compares the status which gets it from etcd with the specs, then changes the actual state of the cluster to match the desired.
+- Connection between components happen with labels and selectors
+	* Labels are `key: value` pairs that are attributed to k8s components
+	* Selectors are used to let a component know what other components should be picked up based on their labels
 #### Best practices
 
 - When updating anything in Kubernetes the usage of delete is actually an anti-pattern and you should use it only as the last option. As long as you don't delete the resource Kubernetes will do a rolling update, ensuring minimum (or none) downtime for the application. On the topic of anti-patterns: you should also always avoid doing anything imperatively! If your files don't tell Kubernetes and your team what the state should be and instead you run commands that edit the state you are just lowering the bus factor for your cluster and application.
