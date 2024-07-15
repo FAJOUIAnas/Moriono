@@ -272,33 +272,36 @@
   	+ They provide a consistent and stable endpoint to interact with your application, regardless of how many pods or replicas are running, their IP addresses, or their current state
   	+ Types:
   		* ClusterIP
-  	 		- Internal service (only accessible within the cluster)
-  	   		- Useful for inter-pod communication
+			- Exposes the Service on a cluster-internal IP.
+			- Internal service (only accessible within the cluster)
+			- Useful for inter-pod communication
 		* NodePort
 			- Exposes the service on a static port on each node
   			- Used for external access to a service
   	  		- Not flexible and require you to assign a different port for every application
-  	    		- Are not used in production but are helpful to know about
-				- Service.yaml :
-					```yaml
-					apiVersion: v1
-					kind: Service
-					metadata:
-						name: my-nodeport-service
-					spec:
-						type: NodePort
-						selector:
-						app: my-app # This is the app as declared in the deployment.
-						ports:
-						- name: http
-							nodePort: 30080 # This is the port that is available outside. Value for nodePort can be between 30000-32767
-							protocol: TCP
-							port: 1234 # This is a port that is available to the cluster, in this case it can be ~ anything
-							targetPort: 3000 # This is the target port
-					```
+  	    	- Are not used in production but are helpful to know about
+			- Service.yaml :
+				```yaml
+				apiVersion: v1
+				kind: Service
+				metadata:
+					name: my-nodeport-service
+				spec:
+					type: NodePort
+					selector:
+					app: my-app # This is the app as declared in the deployment
+					ports:
+					- name: http
+						nodePort: 30080 # This is the port that is available outside. Value for nodePort can be between 30000-32767
+						protocol: TCP
+						port: 1234 # This is a port that is available to the cluster, in this case it can be ~ anything
+						targetPort: 3000 # This is the target port
+				```
 		* LoadBalancer:
-			- Creates an external load balancer
+			- Creates an external load balancer (probably a cloud one)
 			- Useful in cloud environments where load balancers can be provisioned automatically
+			- Exposes the Service externally
+			- Suitable for external-facing applications
 		* ExternalName:
 			- Maps a service to a DNS name
 			- Acts as CNAME record
@@ -308,6 +311,7 @@
   		* In OSI model, it works in layer 7 while services work on layer 4
 		* Can be used together: first a *LoadBalancer* and then Ingress to handle routing
 	+ Similar to Nginx
+	+ Supports SSL termination, virtual hosting, and path-based routing
 
 #### Storage
 
@@ -479,6 +483,7 @@ spec:
 - Connection between components happen with labels and selectors
 	* Labels are `key: value` pairs that are attributed to k8s components
 	* Selectors are used to let a component know what other components should be picked up based on their labels
+
 #### Best practices
 
 - When updating anything in Kubernetes the usage of delete is actually an anti-pattern and you should use it only as the last option. As long as you don't delete the resource Kubernetes will do a rolling update, ensuring minimum (or none) downtime for the application. On the topic of anti-patterns: you should also always avoid doing anything imperatively! If your files don't tell Kubernetes and your team what the state should be and instead you run commands that edit the state you are just lowering the bus factor for your cluster and application.
