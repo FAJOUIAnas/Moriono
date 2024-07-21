@@ -196,6 +196,48 @@
 
 [Scrum Foundation Professional Certification - SFPC™](https://www.credly.com/badges/2be806e6-da64-46fb-9cf5-39f6cdefe6c2/linked_in_profile)
 
+## SOLID
+
+- Design principles that are a set of five guidelines to help software developers design flexible, maintainable, and scalable systems.
+
+### 1. Single Responsibility Principle (SRP)
+
+- A class should have only one reason to change, meaning it should only have one job or responsibility.
+- Each class should focus on a single task. This makes the class easier to understand, test, and maintain.
+- If a class has multiple responsibilities, changes in one responsibility may affect or break the other.
+
+### 2. Open/Closed Principle (OCP)
+
+- Software entities (classes, modules, functions, etc.) should be open for extension but closed for modification.
+- You should be able to add new functionality to a class without changing its existing code.
+- Achieved through abstraction and polymorphism, where new behavior can be added by creating new subclasses or modules.
+
+### 3. Liskov Substitution Principle (LSP)
+
+- Subtypes must be substitutable for their base types without altering the correctness of the program.
+- Derived classes should extend the base classes without changing their behavior.
+- Ensures that a subclass can stand in for its superclass without the program failing or producing incorrect results.
+
+### 4. Interface Segregation Principle (ISP)
+
+- Clients should not be forced to depend on interfaces they do not use.
+- It's better to have many specific interfaces rather than a single, general-purpose interface.
+- Encourages the creation of smaller, more focused interfaces, ensuring that classes only need to implement the methods they actually use.
+
+### 5. Dependency Inversion Principle (DIP)
+
+- High-level modules should not depend on low-level modules. Both should depend on abstractions. Abstractions should not depend on details. Details should depend on abstractions.
+- Promotes the use of interfaces or abstract classes to reduce the dependency on concrete implementations.
+- Helps in achieving a decoupled system, making it easier to change and maintain.
+
+### Benefits
+
+- **Maintainability**: Easier to update and modify code without introducing bugs.
+- **Scalability**: Simplifies adding new features.
+- **Testability**: Facilitates unit testing by isolating components.
+- **Flexibility**: Makes it easier to refactor and improve code over time.
+- **Readability**: Enhances code clarity and comprehension. 
+
 ## OOP
 
 Is a programming paradigm that uses objects and classes to structure software in a way that is modular, reusable, and easy to maintain. The four main principles of OOP are:
@@ -365,6 +407,268 @@ public class Main {
 ```
 In this example, `Shape` is an abstract class with an abstract method `draw`. `Circle` and `Rectangle` provide the implementation for this method.
 
+## Design patterns
+
+- Are typical solutions to commonly occurring problems in software design
+- Pre-made blueprints that you can customize to solve a recurring design problem in your code
+- The pattern is not a specific piece of code, but a general concept for solving a particular problem
+
+### Creational Design Patterns
+
+- Provide various object creation mechanisms, which increase flexibility and reuse of existing code
+
+#### Factory Method
+
+![Factory Method](images/factory-method.png)
+
+- Provides an interface for creating objects in a superclass, but allows subclasses to alter the type of objects that will be created.
+- The essence is to define an interface for creating an object, but let subclasses decide which class to instantiate.
+- Pros:
+	+ Avoid tight coupling between the creator and the concrete products.
+	+ Single Responsibility Principle: You can move the product creation code into one place in the program, making the code easier to support.
+	+ Open/Closed Principle. You can introduce new types of products into the program without breaking existing client code.
+- Cons: the code may become more complicated since you need to introduce a lot of new subclasses to implement the pattern.
+
+##### Step-by-Step Example
+
+1. **Define a Product Interface or Abstract Class:**
+
+```java
+// Product.java
+public interface Product {
+    void use();
+}
+```
+
+2. **Create Concrete Products Implementing the Product Interface:**
+
+```java
+// ConcreteProductA.java
+public class ConcreteProductA implements Product {
+    @Override
+    public void use() {
+        System.out.println("Using Concrete Product A");
+    }
+}
+
+// ConcreteProductB.java
+public class ConcreteProductB implements Product {
+    @Override
+    public void use() {
+        System.out.println("Using Concrete Product B");
+    }
+}
+```
+
+3. **Define the Creator Abstract Class:**
+
+```java
+// Creator.java
+// The creator class declares the factory method that must
+// return an object of a product class. The creator's subclasses
+// usually provide the implementation of this method.
+public abstract class Creator {
+    public abstract Product factoryMethod();
+
+    public void someOperation() {
+		// Call the factory method to create a product object.
+        Product product = factoryMethod();
+        product.use();
+    }
+}
+```
+
+4. **Create Concrete Creators Implementing the Factory Method:**
+
+```java
+// ConcreteCreatorA.java
+public class ConcreteCreatorA extends Creator {
+    @Override
+    public Product factoryMethod() {
+        return new ConcreteProductA();
+    }
+}
+
+// ConcreteCreatorB.java
+public class ConcreteCreatorB extends Creator {
+    @Override
+    public Product factoryMethod() {
+        return new ConcreteProductB();
+    }
+}
+```
+
+5. **Client Code:**
+
+```java
+// Main.java
+public class Main {
+    public static void main(String[] args) {
+        Creator creatorA = new ConcreteCreatorA();
+        Creator creatorB = new ConcreteCreatorB();
+
+        creatorA.someOperation(); // Output: Using Concrete Product A
+        creatorB.someOperation(); // Output: Using Concrete Product B
+    }
+}
+```
+
+#### Abstract Factory
+
+- Provides an interface for creating families of related or dependent objects without specifying their concrete classes.
+- Allows you to create a super-factory that creates other factories.
+- Useful when the client code needs to work with various families of related products without knowing their concrete implementations.
+- Prons:
+	+ Be sure that the products you're getting from a factory are compatible with each other.
+	+ Avoid tight coupling between concrete products and client code.
+	+ Single Responsibility Principle. You can extract the product creation code into one place, making the code easier to support.
+	+ Open/Closed Principle. You can introduce new variants of products without breaking existing client code.
+- Cons: the code may become more complicated than it should be, since a lot of new interfaces and classes are introduced along with the pattern.
+
+##### Step-by-Step Example
+
+1. **Define Abstract Products:**
+
+```java
+// Each distinct product of a product family should have a base
+// interface. All variants of the product must implement this
+// interface.
+
+// AbstractProductA.java
+public interface AbstractProductA {
+    void use();
+}
+
+// AbstractProductB.java
+public interface AbstractProductB {
+    void operate();
+}
+```
+
+2. **Create Concrete Products Implementing the Abstract Products:**
+
+```java
+// ConcreteProductA1.java
+public class ConcreteProductA1 implements AbstractProductA {
+    @Override
+    public void use() {
+        System.out.println("Using Concrete Product A1");
+    }
+}
+
+// ConcreteProductA2.java
+public class ConcreteProductA2 implements AbstractProductA {
+    @Override
+    public void use() {
+        System.out.println("Using Concrete Product A2");
+    }
+}
+
+// ConcreteProductB1.java
+public class ConcreteProductB1 implements AbstractProductB {
+    @Override
+    public void operate() {
+        System.out.println("Operating Concrete Product B1");
+    }
+}
+
+// ConcreteProductB2.java
+public class ConcreteProductB2 implements AbstractProductB {
+    @Override
+    public void operate() {
+        System.out.println("Operating Concrete Product B2");
+    }
+}
+```
+
+3. **Define the Abstract Factory Interface:**
+
+```java
+// The abstract factory interface declares a set of methods that
+// return different abstract products. These products are called
+// a family and are related by a high-level theme or concept.
+// Products of one family are usually able to collaborate among
+// themselves. A family of products may have several variants,
+// but the products of one variant are incompatible with the
+// products of another variant.
+
+// AbstractFactory.java
+public interface AbstractFactory {
+    AbstractProductA createProductA();
+    AbstractProductB createProductB();
+}
+```
+
+4. **Create Concrete Factories Implementing the Abstract Factory:**
+
+```java
+// Concrete factories produce a family of products that belong
+// to a single variant. The factory guarantees that the
+// resulting products are compatible. Signatures of the concrete
+// factory's methods return an abstract product, while inside
+// the method a concrete product is instantiated.
+
+// ConcreteFactory1.java
+public class ConcreteFactory1 implements AbstractFactory {
+    @Override
+    public AbstractProductA createProductA() {
+        return new ConcreteProductA1();
+    }
+
+    @Override
+    public AbstractProductB createProductB() {
+        return new ConcreteProductB1();
+    }
+}
+
+// ConcreteFactory2.java
+public class ConcreteFactory2 implements AbstractFactory {
+    @Override
+    public AbstractProductA createProductA() {
+        return new ConcreteProductA2();
+    }
+
+    @Override
+    public AbstractProductB createProductB() {
+        return new ConcreteProductB2();
+    }
+}
+```
+
+5. **Client Code:**
+
+```java
+// The client code works with factories and products only
+// through abstract types: AbstractFactory, AbstractProductA and AbstractProductB.
+// This lets you pass any factory or product subclass to the client
+// code without breaking it.
+
+// Main.java
+public class Main {
+    private AbstractProductA productA;
+    private AbstractProductB productB;
+
+    public Main(AbstractFactory factory) {
+        productA = factory.createProductA();
+        productB = factory.createProductB();
+    }
+
+    public void run() {
+        productA.use();
+        productB.operate();
+    }
+
+    public static void main(String[] args) {
+        AbstractFactory factory1 = new ConcreteFactory1();
+        Main app1 = new Main(factory1);
+        app1.run(); // Output: Using Concrete Product A1, Operating Concrete Product B1
+
+        AbstractFactory factory2 = new ConcreteFactory2();
+        Main app2 = new Main(factory2);
+        app2.run(); // Output: Using Concrete Product A2, Operating Concrete Product B2
+    }
+}
+```
 
 ## Microservices
 - Microservices are small, autonomous services that work together
