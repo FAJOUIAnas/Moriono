@@ -196,6 +196,176 @@
 
 [Scrum Foundation Professional Certification - SFPC™](https://www.credly.com/badges/2be806e6-da64-46fb-9cf5-39f6cdefe6c2/linked_in_profile)
 
+## OOP
+
+Is a programming paradigm that uses objects and classes to structure software in a way that is modular, reusable, and easy to maintain. The four main principles of OOP are:
+
+1. **Encapsulation**
+2. **Inheritance**
+3. **Polymorphism**
+4. **Abstraction**
+
+### 1. Encapsulation
+
+- Bundling data and methods in a class and restricting access through access modifiers.
+
+**Example:**
+```java
+public class Person {
+    // Private fields
+    private String name;
+    private int age;
+    
+    // Public getter for name
+    public String getName() {
+        return name;
+    }
+    
+    // Public setter for name
+    public void setName(String name) {
+        this.name = name;
+    }
+    
+    // Public getter for age
+    public int getAge() {
+        return age;
+    }
+    
+    // Public setter for age
+    public void setAge(int age) {
+        if (age > 0) {
+            this.age = age;
+        }
+    }
+}
+```
+In this example, the `name` and `age` fields are encapsulated within the `Person` class. Access to these fields is provided through public getter and setter methods.
+
+### 2. Inheritance
+
+- One class inherits the properties and methods of another class.
+- The class that inherits is called the subclass.
+- The class from which it inherits is called the superclass.
+
+**Example:**
+```java
+// Superclass
+public class Animal {
+    public void eat() {
+        System.out.println("This animal eats food.");
+    }
+}
+
+// Subclass
+public class Dog extends Animal {
+    public void bark() {
+        System.out.println("The dog barks.");
+    }
+}
+
+// Using inheritance
+public class Main {
+    public static void main(String[] args) {
+        Dog dog = new Dog();
+        dog.eat(); // Inherited method
+        dog.bark(); // Subclass method
+    }
+}
+```
+In this example, `Dog` inherits from `Animal`, so it has access to the `eat` method defined in `Animal`.
+
+### 3. Polymorphism
+
+- Allows objects to be treated as instances of their parent class rather than their actual class.
+- It enables one interface to be used for a general class of actions. The specific action is determined by the exact nature of the situation.
+- 2 types:
+	1. **Static Polymorphism (Compile-time Polymorphism)**:
+		- Resolved at compile time
+		- E.g.: method overloading (same name, different parameter lists)
+	2. **Dynamic Polymorphism (Run-time Polymorphism)**:
+		- Resolved at run time
+		- E.g.: method overriding (subclass provides a specific implementation of a method that is already defined in its superclass)
+
+**Example:**
+```java
+// Superclass
+public class Animal {
+    public void makeSound() {
+        System.out.println("Some generic animal sound");
+    }
+}
+
+// Subclass
+public class Dog extends Animal {
+    @Override
+    public void makeSound() {
+        System.out.println("Bark");
+    }
+}
+
+// Subclass
+public class Cat extends Animal {
+    @Override
+    public void makeSound() {
+        System.out.println("Meow");
+    }
+}
+
+// Using dynamic polymorphism
+public class Main {
+    public static void main(String[] args) {
+        Animal myDog = new Dog();
+        Animal myCat = new Cat();
+        
+        myDog.makeSound(); // Outputs "Bark"
+        myCat.makeSound(); // Outputs "Meow"
+    }
+}
+```
+In this example, the `makeSound` method is overridden in both `Dog` and `Cat` subclasses, demonstrating polymorphism. The `Animal` reference can point to any subclass object, and the appropriate method is called based on the actual object.
+
+### 4. Abstraction
+
+- Hiding complex implementation details and exposing only the essential features.
+- Is achieved using abstract classes and interfaces.
+
+**Example with Abstract Class:**
+```java
+// Abstract class
+public abstract class Shape {
+    abstract void draw();
+}
+
+// Subclass
+public class Circle extends Shape {
+    @Override
+    void draw() {
+        System.out.println("Drawing a circle");
+    }
+}
+
+// Subclass
+public class Rectangle extends Shape {
+    @Override
+    void draw() {
+        System.out.println("Drawing a rectangle");
+    }
+}
+
+// Using abstraction
+public class Main {
+    public static void main(String[] args) {
+        Shape circle = new Circle();
+        Shape rectangle = new Rectangle();
+        
+        circle.draw(); // Outputs "Drawing a circle"
+        rectangle.draw(); // Outputs "Drawing a rectangle"
+    }
+}
+```
+In this example, `Shape` is an abstract class with an abstract method `draw`. `Circle` and `Rectangle` provide the implementation for this method.
+
+
 ## Microservices
 - Microservices are small, autonomous services that work together
 - One should use microservices as a means to obtain a desired outcome rather than for the sake of using a new technology
@@ -234,7 +404,7 @@
 - Read kubeconfig and use the information to connect to the cluster
 - The contents include certificates, passwords and the address in which the cluster API
 
-#### Concepts
+#### Components
 
 - Pod
 	+ An abstraction around one or more containers
@@ -249,6 +419,26 @@
   	+ You describe a desired state in a Deployment, and the Deployment Controller changes the actual state to the desired state at a controlled rate
   	+ A Deployment resource takes care of deployment. It's a way to tell Kubernetes what container you want, how they should be running and how many of them should be running
   	+ Kubernetes take care of rolling out a new version of a deployment by using tags (e.g. hehe/image:tag), with the deployments each time we update the image we can modify and apply the new deployment yaml
+- Secret
+	+ A way to store sensitive data (passwords, OAuth tokens, SSH keys, etc.) in K8s
+	+ Secrets aren't accessible to anyone
+	+ Stored in etcd
+	+ Can be referenced in other config files
+	+ YAML:
+	
+	```yaml
+	apiVersion: v1
+	kind: Secret
+	metadata:
+		name: my-secret
+	type: Opaque # Most basic secret type
+	data:
+		db-root-username: dXNlcm5hbWU= # Must be encoded in base64
+		db-root-password: cGFzc3dvcmQ=
+	```
+- ConfigMap:
+	+ Similar to secrets but used for non-sensitive data
+	+ Stores everything in plain text and nothing is encrypted by default
 - Updating images
 	+ Kubernetes doesn't know if a Docker image is modified or wether a newer version is uploaded to the repository
 	+ By default, Kubernetes won't pull the image if it already exists
