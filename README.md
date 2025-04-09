@@ -679,9 +679,9 @@ public class Main {
 
 #### What is Kubernetes?
 
-- What if you could just define "This process should have 6 copies using X amount of resources." and have the *2..N* computers working as a single entity to fulfill your request? That's just one thing Kubernetes makes possible
-- In essence, Kubernetes is the sum of all the bash scripts and best practices that most system administrators would cobble together over time, presented as a single system behind a declarative set of APIs
-- Kubernetes (K8s) is an open-source system for automating deployment, scaling, and management of containerized applications. It groups containers that make up an application into logical units for easy management and discovery
+- What if you could just define "This process should have 6 copies using X amount of resources." and have the *2..N* computers working as a single entity to fulfill your request? That's just one thing Kubernetes makes possible.
+- In essence, Kubernetes is the sum of all the bash scripts and best practices that most system administrators would cobble together over time, presented as a single system behind a declarative set of APIs.
+- Kubernetes (K8s) is an open-source system for automating deployment, scaling, and management of containerized applications. It groups containers that make up an application into logical units for easy management and discovery.
 - The main responsibility of an orchestration system:
 	+ Starting and stopping of containers
 	+ Networking between containers
@@ -690,23 +690,31 @@ public class Main {
 - [Kubernetes comic](https://cloud.google.com/kubernetes-engine/kubernetes-comic/)
 - When managing Docker images, Kubernetes also makes applications portable. Once they are developed with a containerized architecture using Kubernetes, they can be deployed anywhere – public cloud, hybrid, on-prem – without any change to the underlying code.
 
-#### Kubernetes cluster with k3d
+#### Cluster
 
-- A cluster is a group of machines, nodes, that work together
-- "Server nodes" are nodes with control-plane
-- "Agent nodes" are nodes without that role
+- A cluster is a group of machines, nodes, that work together.
+- "Server nodes" are nodes with control-plane.
+- "Agent nodes" are nodes without that role.
 
-![With k3d](https://github.com/FAJOUIAnas/Moriono/assets/93566369/68953fac-78b5-4843-b4b6-50d7f3734dce "without k3d")
+![cluster_without_k3d](images/without_k3d.webp "K8s cluster without k3d")
+
 - A cluster with k3d:
 
-![Without k3d](https://github.com/FAJOUIAnas/Moriono/assets/93566369/8d4592a5-4d6d-4123-a2af-7daa4aebac5b "with k3d")
+![cluster_with_k3d](with_k3d.webp "K8s cluster with k3d")
 
 #### kubectl
 
-- The Kubernetes command-line tool
-- Allows to interact with the cluster
-- Read kubeconfig and use the information to connect to the cluster
-- The contents include certificates, passwords and the address in which the cluster API
+- The Kubernetes command-line tool.
+- Allows to interact with the cluster.
+- Reads kubeconfig and use the information to connect to the cluster.
+- The contents include certificates, passwords and the address in which the cluster API.
+- [Documentation](https://kubernetes.io/docs/reference/kubectl/).
+
+#### kubeconfig files
+
+- Are used to organize information about clusters, users, namespaces, and authentication mechanisms.
+- By default, kubectl looks for a file named `config` in the `$HOME/.kube` directory.
+- [Documentation](https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/).
 
 #### Components
 
@@ -754,8 +762,6 @@ public class Main {
 		* **`Never`:** the kubelet does not try fetching the image. If the image is somehow already present locally, the kubelet attempts to start the container; otherwise, startup fails. See pre-pulled images for more details.
 	+ The caching semantics of the underlying image provider make even imagePullPolicy: Always efficient, as long as the registry is reliably accessible. Your container runtime can notice that the image layers already exist on the node so that they don't need to be downloaded again.
 
-
- 
 #### Networking
 
 - [Webinar: Kubernetes and Networks: Why is This So Dang Hard?](https://youtu.be/GgCA2USI5iQ?si=Pc7d4OfzgOQoFLRp)
@@ -1007,6 +1013,7 @@ spec:
   	+ Security
 - Can keep a cache of static content
 - Can be used to add features such as compression or TLS encryption to the communication channel between the client and the reverse proxy
+- A load balancer is a type of reverse proxy that distributes incoming network traffic across multiple backend servers.
 
 ### Web services
 
