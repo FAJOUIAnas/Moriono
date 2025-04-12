@@ -700,7 +700,7 @@ public class Main {
 
 - A cluster with k3d:
 
-![cluster_with_k3d](with_k3d.webp "K8s cluster with k3d")
+![cluster_with_k3d](images/with_k3d.webp "K8s cluster with k3d")
 
 #### kubectl
 
