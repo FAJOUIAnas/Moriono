@@ -719,18 +719,19 @@ public class Main {
 #### Components
 
 - Pod
-	+ An abstraction around one or more containers
-	+ Container of containers
+	+ Is the smallest deployable unit that ou can manage in K8s.
+	+ An abstraction around one or more containers with shared storage and network resources.
+	+ Container of containers.
 - ReplicaSets
-	+ Used to tell how many replicas of a Pod you want
-	+ It will delete or create Pods until the number of Pods you wanted are running
-	+ ReplicaSets are managed by Deployments
+	+ Used to tell how many replicas of a Pod you want.
+	+ It will delete or create Pods until the number of Pods you wanted are running.
+	+ ReplicaSets are managed by Deployments.
 - Deployment
-	+ Abstraction over pods
-  	+ Provides declarative updates for Pods and ReplicaSets
-  	+ You describe a desired state in a Deployment, and the Deployment Controller changes the actual state to the desired state at a controlled rate
-  	+ A Deployment resource takes care of deployment. It's a way to tell Kubernetes what container you want, how they should be running and how many of them should be running
-  	+ Kubernetes take care of rolling out a new version of a deployment by using tags (e.g. hehe/image:tag), with the deployments each time we update the image we can modify and apply the new deployment yaml
+	+ M anages a set of Pods (abstraction over pods).
+  	+ Provides declarative updates for Pods and ReplicaSets.
+  	+ You describe a desired state in a Deployment, and the Deployment Controller changes the actual state to the desired state at a controlled rate.
+  	+ A Deployment resource takes care of deployment. It's a way to tell Kubernetes what container you want, how they should be running and how many of them should be running.
+  	+ Kubernetes take care of rolling out a new version of a deployment by using tags (e.g. hehe/image:tag). With the deployments, each time we update the image we can modify and apply the new deployment yaml.
 - Secret
 	+ A way to store sensitive data (passwords, OAuth tokens, SSH keys, etc.) in K8s
 	+ Secrets aren't accessible to anyone
