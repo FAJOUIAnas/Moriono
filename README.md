@@ -1121,3 +1121,100 @@ spec:
 		* Eliminates the need to make massive capital expenditures to handle short-term spikes in demand
 
 ### [CNCF Cloud Native Interactive Landscape](https://landscape.cncf.io/)
+
+## Cryptography
+
+### Public Key Certificates
+
+- Digital certificates (like X.509 certificates used in TLS/SSL) are essential for trust and secure communication.
+- A digital certificate is a signed data structure that binds:
+	+ A **public key** (of a user or server)
+	+ To an **identity** (like a domain name or person)
+	+ Along with a **validity period**, issuer information, and more
+
+#### Format:
+
+Most certificates follow the **X.509** standard. They contain:
+
+```
+Cert = {
+  Subject: "www.example.com",
+  PublicKey: (n, e),         # RSA public key for example
+  Issuer: "Let's Encrypt",
+  ValidFrom: date1,
+  ValidTo: date2,
+  Signature: Sig             # signature by issuer's private key
+}
+```
+
+#### Use Case Example: HTTPS (TLS)
+
+1. A **Client** (e.g. browser) connects to a website like `https://example.com`.
+2. The **Server** sends its certificate to the client.
+3. The Client then verifies the certificate:
+   + Is it a valid signature?
+   + Is it not expired?
+   * Is it issued by a trusted Certificate Authority (CA)?
+4. If all checks pass, the client *trusts* the public key inside the certificate.
+5. The client and server then use that public key to establish a secure encrypted channel (e.g. via key exchange or encrypting a symmetric session key).
+
+#### The Math Behind Certificates
+
+##### Step 1: Key Pair Generation
+
+- Most certificates use:
+	+ **RSA** (older, common) or
+	+ **ECDSA** (faster, modern)
+- Example: RSA
+	1. Choose two large primes `p` and `q`.
+	2. Compute `n = p * q`.
+	3. Compute Euler's totient: `φ(n) = (p-1)(q-1)`
+	4. Choose public exponent `e` (commonly 65537).
+	5. Compute private key `d` such that `e * d ≡ 1 mod φ(n)`
+	+ The key pair is:
+		* Public key: `(n, e)`
+		* Private key: `d`
+
+##### Step 2: Certificate Signing
+
+Let’s say `Let's Encrypt` is a Certificate Authority (CA), and they issue a cert to `example.com`.
+
+1. CA takes the certificate content (Subject, Public Key, Validity, etc.)
+2. They compute a hash of it:
+   `H = SHA-256(cert_body)`
+3. They sign the hash with their private key (e.g., RSA private key `d_CA`):
+   `Sig = H^d_CA mod n_CA`
+	- The digital signature proves:
+		+ The integrity of the message (it wasn't modified).
+		+ The authenticity of the sender (only the private key holder could sign it).
+	- The digital signature is a mathematical seal that anyone can verify, but only the rightful owner can create.
+	- How RSA Signatures Are Calculated (Signed with private key):
+		1. Input: Message `M` (for this example it's the certificate body), and the hash is `h`.
+		2. Convert hash `h` to an integer `H` (typically using a padding scheme like PKCS#1 v1.5 or PSS).
+		4. Use the private key `(n_CA, d_CA)` to sign:
+
+		```
+		signature = H^d_CA mod n_CA
+		```
+4. They attach `Sig` to the certificate. This forms the digital signature.
+
+##### Step 3: Signature Verification
+
+When the client receives the cert, he:
+1. Extract the body of the certificate and compute its hash:
+   `H' = SHA-256(cert_body)`
+2. Decrypt the signature using the CA's **public key** `(n_CA, e_CA)`:
+   `H = Sig^e_CA mod n_CA`
+3. If `H == H'`, the signature is valid → the certificate is authentic and untampered.
+
+#### Chain of Trust
+
+- Certificates are not trusted directly; trust is based on a chain:
+```
+Root CA cert (self-signed)
+   ↓
+Intermediate CA cert
+   ↓
+Server cert (e.g., www.example.com)
+```
+- Browsers come preloaded with a list of*trusted Root CAs. If the certificate chain ends in one of those, and every signature in the chain is valid, the final certificate is trusted.
