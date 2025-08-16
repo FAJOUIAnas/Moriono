@@ -675,7 +675,7 @@ public class Main {
 - One should use microservices as a means to obtain a desired outcome rather than for the sake of using a new technology
 - Microservices shouldn't be the default option. If you think a service architecture could help, try it with one of the modules from a very simple monolith typology and let it evolve from there
 
-### Kubernetes
+ ### Kubernetes
 
 #### What is Kubernetes?
 
@@ -719,15 +719,17 @@ public class Main {
 #### Components
 
 - Pod
-	+ Is the smallest deployable unit that ou can manage in K8s.
+	+ Is the smallest deployable unit that you can manage in K8s.
 	+ An abstraction around one or more containers with shared storage and network resources.
 	+ Container of containers.
+
+	![pods](images/pods.png)
 - ReplicaSets
 	+ Used to tell how many replicas of a Pod you want.
 	+ It will delete or create Pods until the number of Pods you wanted are running.
-	+ ReplicaSets are managed by Deployments.
+	+ ReplicaSets are automatically managed by Deployments.
 - Deployment
-	+ M anages a set of Pods (abstraction over pods).
+	+ Manages a set of Pods (abstraction over pods).
   	+ Provides declarative updates for Pods and ReplicaSets.
   	+ You describe a desired state in a Deployment, and the Deployment Controller changes the actual state to the desired state at a controlled rate.
   	+ A Deployment resource takes care of deployment. It's a way to tell Kubernetes what container you want, how they should be running and how many of them should be running.
@@ -934,6 +936,9 @@ public class Main {
 
 ##### Overview
 
+- There declarative approach helps you to define how things should be rather than how they should change. This is more sustainable in the long run than the imperative approach and will let us keep our sanity.
+- Usually the `deployment.yaml` file resides inside a folder named `manifests`.
+- Example:
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
