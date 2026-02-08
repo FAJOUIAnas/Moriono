@@ -64,7 +64,7 @@
 		- Helping the Scrum Team focus on creating high-value Increments that meet the Definition of Done
 		- Causing the removal of impediments to the Scrum Team’s progress
 		- Ensuring that all Scrum events take place and are positive, productive, and kept within the timebox
-	* Serves the Prduct Owner in:
+	* Serves the Product Owner in:
 		- Helping find techniques for effective Product Goal definition and Product Backlog management
 		- Helping the Scrum Team understand the need for clear and concise Product Backlog items
 		- Helping establish empirical product planning for a complex environment
@@ -518,7 +518,7 @@ public class Main {
 - Provides an interface for creating families of related or dependent objects without specifying their concrete classes.
 - Allows you to create a super-factory that creates other factories.
 - Useful when the client code needs to work with various families of related products without knowing their concrete implementations.
-- Prons:
+- Pros:
 	+ Be sure that the products you're getting from a factory are compatible with each other.
 	+ Avoid tight coupling between concrete products and client code.
 	+ Single Responsibility Principle. You can extract the product creation code into one place, making the code easier to support.
@@ -675,9 +675,9 @@ public class Main {
 - One should use microservices as a means to obtain a desired outcome rather than for the sake of using a new technology
 - Microservices shouldn't be the default option. If you think a service architecture could help, try it with one of the modules from a very simple monolith typology and let it evolve from there
 
- ### Kubernetes
+### Kubernetes
 
-#### What is Kubernetes?
+#### Overview
 
 - What if you could just define "This process should have 6 copies using X amount of resources." and have the *2..N* computers working as a single entity to fulfill your request? That's just one thing Kubernetes makes possible.
 - In essence, Kubernetes is the sum of all the bash scripts and best practices that most system administrators would cobble together over time, presented as a single system behind a declarative set of APIs.
@@ -690,7 +690,9 @@ public class Main {
 - [Kubernetes comic](https://cloud.google.com/kubernetes-engine/kubernetes-comic/)
 - When managing Docker images, Kubernetes also makes applications portable. Once they are developed with a containerized architecture using Kubernetes, they can be deployed anywhere – public cloud, hybrid, on-prem – without any change to the underlying code.
 
-#### Cluster
+#### Architecture
+
+##### Cluster
 
 - A cluster is a group of machines, nodes, that work together.
 - "Server nodes" are nodes with control-plane.
@@ -702,19 +704,51 @@ public class Main {
 
 ![cluster_with_k3d](images/with_k3d.webp "K8s cluster with k3d")
 
-#### kubectl
+##### Worker Nodes
 
-- The Kubernetes command-line tool.
-- Allows to interact with the cluster.
-- Reads kubeconfig and use the information to connect to the cluster.
-- The contents include certificates, passwords and the address in which the cluster API.
-- [Documentation](https://kubernetes.io/docs/reference/kubectl/).
+- Contains running pods
+- Main processes:
+	+ Container runtime (Docker)
+	+ Kubelet:
+		* The interface between the container runtime and the node itself
+		* Runs pods and assigns resources to them
+	+ Kube proxy: Forwards requests from services to pods
 
-#### kubeconfig files
+##### Master Nodes
 
-- Are used to organize information about clusters, users, namespaces, and authentication mechanisms.
-- By default, kubectl looks for a file named `config` in the `$HOME/.kube` directory.
-- [Documentation](https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/).
+- Main processes:
+	+ API Server:
+		* Takes queries and updates cluster respectively
+		* The entrypoint with which you talk to your K8s cluster
+		* You can communicate with it via UI, API, or CLI (kubectl)
+	+ Scheduler:
+		* Decides pods to be deployed on what worker node depending on CPU and memory available
+		* Uses the Kubelet to actually start the pod
+	+ Controller manager:
+		* Detects state changes of the cluster
+		* If it detects pod failure, it will send a request to the Scheduler to start a new pod
+	+ etcd:
+		* Key value store
+		* All changes are saved in it
+		* Contains all data and information of the state of the cluster
+		* Application data is NOT stored in etcd
+	
+- Master Nodes are also replicated:
+	+ API Servers are load balanced
+	+ etcd storage is distributed
+
+#### CLI & kubeconfig
+
+- kubectl
+	+ The Kubernetes command-line tool.
+	+ Allows to interact with the cluster.
+	+ Reads kubeconfig and use the information to connect to the cluster.
+	+ The contents include certificates, passwords and the address in which the cluster API.
+	+ [Documentation](https://kubernetes.io/docs/reference/kubectl/).
+- kubeconfig files
+	+ Are used to organize information about clusters, users, namespaces, and authentication mechanisms.
+	+ By default, kubectl looks for a file named `config` in the `$HOME/.kube` directory.
+	+ [Documentation](https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/).
 
 #### Components
 
@@ -768,22 +802,20 @@ public class Main {
 #### Networking
 
 - [Webinar: Kubernetes and Networks: Why is This So Dang Hard?](https://youtu.be/GgCA2USI5iQ?si=Pc7d4OfzgOQoFLRp)
-- Service
-	+ Service resource will take care of serving the application to connections from outside of the cluster
-  	+ Used to expose and access applications running within a Kubernetes cluster
-  	+ Enable network communication between different parts of your application or between different applications
-  	+ They provide a consistent and stable endpoint to interact with your application, regardless of how many pods or replicas are running, their IP addresses, or their current state
+- Port forwarding: the port-forward is a command used in K8s to forward a local port to a pod. This allows you to easily access applications running inside your K8s cluster from your local machine. Port-forwarding is not meant for production use, but it's very useful for debugging and development purposes. `kubectl port-forward pod/<pod-name> <local port>:<port inside the pod>`.
+- [Service](https://kubernetes.io/docs/concepts/services-networking/service/):
+	+ Service resource will take care of serving the application to connections from both outside of the cluster and within.
+	+ Works in OSI's layer 4.
+  	+ Used to expose and access applications running within a Kubernetes cluster.
+  	+ Enables network communication between different parts of your application or between different applications.
+  	+ Provides a consistent and stable endpoint to interact with your application, regardless of how many pods or replicas are running, their IP addresses, or their current state. This is especially useful because of the ephemeral nature of pods.
   	+ Types:
-  		* ClusterIP
-			- Exposes the Service on a cluster-internal IP.
-			- Internal service (only accessible within the cluster)
-			- Useful for inter-pod communication
-		* NodePort
-			- Exposes the service on a static port on each node
-  			- Used for external access to a service
-  	  		- Not flexible and require you to assign a different port for every application
-  	    	- Are not used in production but are helpful to know about
-			- Service.yaml :
+		* [NodePort](https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport):
+			- Exposes the service on a static port on each node.
+  			- Used for external access to a service.
+  	  		- Not flexible and require you to assign a different port for every application.
+  	    	- Are not used in production but are helpful to know about.
+			- service.yaml :
 				```yaml
 				apiVersion: v1
 				kind: Service
@@ -794,11 +826,29 @@ public class Main {
 					selector:
 					app: my-app # This is the app as declared in the deployment
 					ports:
-					- name: http
-						nodePort: 30080 # This is the port that is available outside. Value for nodePort can be between 30000-32767
+						- name: http
+							nodePort: 30080 # This is the port that is available outside. Value for nodePort can be between 30000-32767
+							protocol: TCP
+							port: 1234 # This is a port that is available to the cluster, in this case it can be ~ anything
+							targetPort: 3000 # This is the target port
+				```
+  		* ClusterIP:
+			- Exposes the Service by giving it an internal IP that'll only be accessible within the cluster.
+			- Useful for inter-pod communication.
+			- service.yaml:
+				```yaml
+				apiVersion: v1
+				kind: Service
+				metadata:
+				name: my-clusterip-svc
+				spec:
+				type: ClusterIP
+				selector:
+					app: my-app
+				ports:
+				  	- port: 2345
 						protocol: TCP
-						port: 1234 # This is a port that is available to the cluster, in this case it can be ~ anything
-						targetPort: 3000 # This is the target port
+						targetPort: 3000
 				```
 		* LoadBalancer:
 			- Creates an external load balancer (probably a cloud one)
@@ -808,13 +858,31 @@ public class Main {
 		* ExternalName:
 			- Maps a service to a DNS name
 			- Acts as CNAME record
-- Ingress
-	+ Incoming Network Access resource
-  	+ Different type of resource from *Services*
-  		* In OSI model, it works in layer 7 while services work on layer 4
-		* Can be used together: first a *LoadBalancer* and then Ingress to handle routing
-	+ Similar to Nginx
-	+ Supports SSL termination, virtual hosting, and path-based routing
+- [Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/): Incoming Network Access resource.
+	+ Works in OSI's layer 4.
+  	+ Different type of resource from *Services*.
+	+ Similar to Nginx.
+	+ Supports SSL termination, virtual hosting, and path-based routing.
+	+ Ingresses are implemented by various different "controllers". This means that ingresses do not automatically work in a cluster, but give you the freedom of choosing which Ingress controller works for you the best. Popular options include: Traefik, Istio, and Nginx Ingress Controller, [more here](https://kubernetes.io/docs/concepts/services-networking/ingress-controllers/).
+	+ The following ingres.yaml routes all traffic to `my-svc` service:
+		```yaml
+		apiVersion: networking.k8s.io/v1
+		kind: Ingress
+		metadata:
+		name: my-ingress
+		spec:
+		rules:
+		- http:
+			paths:
+			- path: /
+				pathType: Prefix
+				backend:
+				service:
+					name: my-svc
+					port:
+					number: 2345
+		```
+
 
 #### Storage
 
@@ -840,7 +908,7 @@ public class Main {
 - Kubernetes natively offers some solutions to manage storage:
 	+ Ephemeral options
 	+ Persistent storage:
-		* Piersistent Volumes (PV):
+		* Persistent Volumes (PV):
 			- Are storage units that have been provisioned by an administrator
 			- Are independent of any single pod
 		* Persistent Volume Claims (PVC):
@@ -867,7 +935,7 @@ public class Main {
 
 - Ceph:
 	+ Is a storage cluster
-	+ Aynamically managed
+	+ Dynamically managed
 	+ Horizontally scalable
 	+ Distributed
 	+ Provides a logical abstraction over the storage resources
@@ -897,44 +965,7 @@ public class Main {
 - Created when a Pod is assigned to a Node
 - Can be used to share data between containers within the same Pod
 
-#### Architecture
-
-##### Worker Nodes
-
-- Contains running pods
-- Main processes:
-	+ Container runtime (Docker)
-	+ Kubelet:
-		* The interface between the container runtime and the node itself
-		* Runs pods and assigns resources to them
-	+ Kube proxy: Forwards requests from services to pods
-
-##### Master Nodes
-
-- Main processes:
-	+ API Server:
-		* Takes queries and updates cluster respectively
-		* The entrypoint with which you talk to your K8s cluster
-		* You can communicate with it via UI, API, or CLI (kubectl)
-	+ Scheduler:
-		* Decides pods to be deployed on what worker node depending on CPU and memory available
-		* Uses the Kubelet to actually start the pod
-	+ Controller manager:
-		* Detects state changes of the cluster
-		* If it detects pod failure, it will send a request to the Scheduler to start a new pod
-	+ etcd:
-		* Key value store
-		* All changes are saved in it
-		* Contains all data and information of the state of the cluster
-		* Application data is NOT stored in etcd
-	
-- Master Nodes are also replicated:
-	+ API Servers are load balanced
-	+ etcd storage is distributed
-
 #### YAML Configuration file
-
-##### Overview
 
 - There declarative approach helps you to define how things should be rather than how they should change. This is more sustainable in the long run than the imperative approach and will let us keep our sanity.
 - Usually the `deployment.yaml` file resides inside a folder named `manifests`.
@@ -973,7 +1004,7 @@ spec:
     app: nginx
   ports:
     - protocol: TCP
-      port: 80 # This is the port that will recieve requests
+      port: 80 # This is the port that will receive requests
       targetPort: 8080 # This is the container port
 ```
 
@@ -1001,6 +1032,34 @@ spec:
 
 ## Networking
 
+### Network Models
+
+#### OSI (Open Systems Interconnection)
+
+Is a 7-layer model designed to standardize networking functions. Each layer has a specific role.
+
+| Layer | Name             | Function                                                                                                                                   |
+| ----- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| 7     | **Application**  | Interfaces directly with end-user applications (e.g., browsers, email clients). Provides services like HTTP, FTP, SMTP.                    |
+| 6     | **Presentation** | Translates data between application and network formats, handles encryption/decryption, compression, and encoding.                         |
+| 5     | **Session**      | Manages sessions or connections between applications (start, maintain, terminate).                                                         |
+| 4     | **Transport**    | Provides reliable or unreliable delivery. Handles segmentation, flow control, error checking. Protocols: TCP (reliable), UDP (unreliable). |
+| 3     | **Network**      | Handles logical addressing and routing between networks. Protocol: IP.                                                                     |
+| 2     | **Data Link**    | Packages data into frames, handles physical addressing (MAC), error detection, and flow control.                                           |
+| 1     | **Physical**     | Deals with the actual transmission of raw bits over physical media (cables, fiber, wireless).                                              |
+
+#### TCP/IP (Internet Protocol Suite)
+
+Is more practical and widely used, especially for the Internet. It has 4 layers (some sources show 5).
+
+| Layer | TCP/IP Name               | Function                                                                                   | Corresponding OSI Layers |
+| ----- | ------------------------- | ------------------------------------------------------------------------------------------ | ------------------------ |
+| 4     | **Application**           | Handles high-level protocols and interfaces directly with software (HTTP, FTP, SMTP, DNS). | OSI 7,6,5                |
+| 3     | **Transport**             | Ensures end-to-end communication (TCP for reliable, UDP for fast/unreliable).              | OSI 4                    |
+| 2     | **Internet**              | Routes packets across networks using logical addressing (IP).                              | OSI 3                    |
+| 1     | **Network Access / Link** | Handles physical transmission, framing, MAC addressing.                                    | OSI 2,1                  |
+
+
 ### Proxy
 
 - Acts as an intermediary between a client and the internet
@@ -1009,16 +1068,16 @@ spec:
 
 ### Reverse proxy
 ![Reverse proxy](https://github.com/FAJOUIAnas/Moriono/assets/93566369/f26f0cd1-3260-4692-b398-4daee2571abd "Diagram of a reverse proxy")
-- Is an application that sits in front of back-end applications and forwards client (e.g. browser) requests to those applications
-- The resources returned to the client appear as if they originated from the web server itself
-- The client is often not aware of its presence
+- Is an application that sits in front of back-end applications and forwards client (e.g. browser) requests to those applications.
+- The resources returned to the client appear as if they originated from the web server itself.
+- The client is often not aware of its presence.
 - Can help increase:
 	+ Scalability
 	+ Performance
   	+ Resilience
   	+ Security
 - Can keep a cache of static content
-- Can be used to add features such as compression or TLS encryption to the communication channel between the client and the reverse proxy
+- Can be used to add features such as compression or TLS encryption to the communication channel between the client and the reverse proxy.
 - A load balancer is a type of reverse proxy that distributes incoming network traffic across multiple backend servers.
 
 ### Web services
@@ -1029,8 +1088,8 @@ spec:
 	+ Load balancer
   	+ Mail proxy
   	+ HTTP cache
-- Easy to configure in order to serve static web content or to act as a proxy server
-- Can be deployed to also serve dynamic content on the network
+- Easy to configure in order to serve static web content or to act as a proxy server.
+- Can be deployed to also serve dynamic content on the network.
 
 ### Internet protocol
 
@@ -1038,7 +1097,7 @@ spec:
 
 - Is a communication protocol for email transmission.
 - SMTP Server:
-	+ Responsible for sending, recieving, or relaying emails.
+	+ Responsible for sending, receiving, or relaying emails.
 	+ Runs on port 25 (port 587 for SSL/TLS communication).
 
 ## OS
@@ -1048,7 +1107,7 @@ spec:
 #### Pass
 
 - The standard unix password manager
-- Follows Unix philosophu
+- Follows Unix philosophy
 - Each password lives inside of a gpg encrypted file whose filename is the title of the website or resource that requires the password
 - These encrypted files may be:
 	+ Organized into meaningful folder hierarchies
@@ -1173,7 +1232,7 @@ Cert = {
 - Example: RSA
 	1. Choose two large primes `p` and `q`.
 	2. Compute `n = p * q`.
-	3. Compute Euler's totient: `φ(n) = (p-1)(q-1)`
+	3. Compute Euler's quotient: `φ(n) = (p-1)(q-1)`
 	4. Choose public exponent `e` (commonly 65537).
 	5. Compute private key `d` such that `e * d ≡ 1 mod φ(n)`
 	+ The key pair is:
@@ -1210,7 +1269,7 @@ When the client receives the cert, he:
    `H' = SHA-256(cert_body)`
 2. Decrypt the signature using the CA's **public key** `(n_CA, e_CA)`:
    `H = Sig^e_CA mod n_CA`
-3. If `H == H'`, the signature is valid → the certificate is authentic and untampered.
+3. If `H == H'`, the signature is valid → the certificate is authentic and untempered.
 
 #### Chain of Trust
 
