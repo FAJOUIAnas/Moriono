@@ -859,7 +859,7 @@ public class Main {
 			- Maps a service to a DNS name
 			- Acts as CNAME record
 - [Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/): Incoming Network Access resource.
-	+ Works in OSI's layer 4.
+	+ Works in OSI's layer 7.
   	+ Different type of resource from *Services*.
 	+ Similar to Nginx.
 	+ Supports SSL termination, virtual hosting, and path-based routing.
@@ -880,7 +880,7 @@ public class Main {
 				service:
 					name: my-svc
 					port:
-					number: 2345
+						number: 2345
 		```
 
 
